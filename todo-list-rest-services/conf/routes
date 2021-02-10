@@ -11,3 +11,5 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # Map tasks related routes to TaskController
 GET     /tasks                      controllers.TaskController.list()
 POST    /tasks                      controllers.TaskController.create(request: Request)
+PUT     /tasks/:id                  controllers.TaskController.update(request: Request, id: String)
+DELETE  /tasks                      controllers.TaskController.deleteAll()

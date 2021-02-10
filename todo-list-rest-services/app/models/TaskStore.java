@@ -12,11 +12,11 @@ public class TaskStore {
     return Optional.ofNullable(id);
   }
 
-  public Optional<Task> updateTask(Task task) {
-    int id = task.getId();
+  public Optional<Task> updateTask(String id, Task task) {
+    int idInt = Integer.parseInt(id);
 
-    if(tasks.containsKey(id)) {
-      tasks.put(id, task);
+    if(tasks.containsKey(idInt)) {
+      tasks.put(idInt, task);
 
       return Optional.ofNullable(task);
     }

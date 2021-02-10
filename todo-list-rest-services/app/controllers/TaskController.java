@@ -54,4 +54,36 @@ public class TaskController extends Controller {
       }).orElse(internalServerError(Util.createResponse("message", "Could not create data")));
     }, executionContext.current());
   }
+
+  public CompletionStage<Result> update(Http.Request request, String id) {
+    JsonNode json = request.body().asJson();
+
+    return supplyAsync(() -> {
+      if(json == null) {
+        return badRequest(Util.createResponse("message", "Expecting JSON Data"));
+      }
+
+      Optional<Task> taskOptional = taskStore.updateTask(id, Json.fromJson(json, Task.class));
+
+      return taskOptional.map((task) -> {
+        if(task == null) {
+          return notFound(Util.createResponse("message", "Task Not Found"));
+        }
+
+        return noContent();
+      }).orElse(internalServerError(Util.createResponse("message", "Could not create data")));
+    }, executionContext.current());
+  }
+
+  public CompletionStage<Result> deleteAll() {
+    return supplyAsync(() -> {
+      boolean deleted = taskStore.deleteAllTasks();
+
+      if(!deleted) {
+        return internalServerError("message", "Could not delete data");
+      }
+
+      return noContent();
+    }, executionContext.current());
+  }
 }
