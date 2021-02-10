@@ -5,11 +5,11 @@ import java.util.*;
 public class TaskStore {
   private Map<Integer, Task> tasks = new HashMap<>();
 
-  public Optional<Task> addTask(Task task) {
+  public Optional<Integer> addTask(Task task) {
     int id = task.getId();
     tasks.put(id, task);
 
-    return Optional.ofNullable(task);
+    return Optional.ofNullable(id);
   }
 
   public Optional<Task> updateTask(Task task) {
