@@ -1,37 +1,20 @@
 package models;
 
-public class Task {
-  private int id;
-  private String name;
-  private boolean complete;
 
-  public Task(int id, String name, boolean complete) {
-    this.id = id;
-    this.name = name;
-    this.complete = complete;
-  }
+import io.ebean.Model;
+import play.data.validation.Constraints;
 
-  public int getId() {
-    return id;
-  }
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
-  public void setId(int id) {
-    this.id = id;
-  }
+@Entity
+public class Task extends Model {
+  @Id
+  @Constraints.Required
+  public int id;
 
-  public String getName() {
-    return name;
-  }
+  @Constraints.Required
+  public String name;
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public boolean isComplete() {
-    return complete;
-  }
-
-  public void setComplete(boolean complete) {
-    this.complete = complete;
-  }
+  public boolean complete;
 }
