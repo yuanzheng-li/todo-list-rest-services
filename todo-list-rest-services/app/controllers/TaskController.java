@@ -4,35 +4,32 @@ import Util.Util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.Task;
-import models.TaskStore;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import repository.TaskRepository;
 
 import javax.inject.Inject;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class TaskController extends Controller {
   private HttpExecutionContext executionContext;
-  private TaskStore taskStore;
+  private TaskRepository taskRepository;
 
   @Inject
-  public TaskController(HttpExecutionContext executionContext, TaskStore taskStore) {
+  public TaskController(HttpExecutionContext executionContext, TaskRepository taskRepository) {
     this.executionContext = executionContext;
-    this.taskStore = taskStore;
+    this.taskRepository = taskRepository;
   }
 
   public CompletionStage<Result> list() {
-    return supplyAsync(() -> {
-      Set<Task> result = taskStore.getAllTasks();
+    return taskRepository.list().thenApplyAsync((tasks) -> {
       ObjectMapper mapper = new ObjectMapper();
-      JsonNode jsonData = mapper.convertValue(result, JsonNode.class);
+      JsonNode jsonData = mapper.convertValue(tasks, JsonNode.class);
 
       return ok(Util.createResponse("tasks", jsonData));
     }, executionContext.current());
@@ -41,49 +38,37 @@ public class TaskController extends Controller {
   public CompletionStage<Result> create(Http.Request request) {
     JsonNode json = request.body().asJson();
 
-    return supplyAsync(() -> {
-      if(json == null) {
-        return badRequest(Util.createResponse("message", "Expecting JSON Data"));
-      }
+    if(json == null) {
+      return supplyAsync(() -> badRequest(Util.createResponse("message", "Expecting JSON Data")), executionContext.current());
+    }
 
-      Optional<Integer> taskIdOptional = taskStore.addTask(Json.fromJson(json, Task.class));
-
-      return taskIdOptional.map((task) -> {
-        JsonNode jsonObject = Json.toJson(task);
-        return ok(Util.createResponse("id", jsonObject));
-      }).orElse(internalServerError(Util.createResponse("message", "Could not create data")));
+    return taskRepository.add(Json.fromJson(json, Task.class)).thenApplyAsync((id) -> {
+      JsonNode jsonObject = Json.toJson(id);
+      return ok(Util.createResponse("id", jsonObject));
     }, executionContext.current());
   }
 
   public CompletionStage<Result> update(Http.Request request, String id) {
     JsonNode json = request.body().asJson();
 
-    return supplyAsync(() -> {
-      if(json == null) {
-        return badRequest(Util.createResponse("message", "Expecting JSON Data"));
-      }
+    if(json == null) {
+      return supplyAsync(() -> badRequest(Util.createResponse("message", "Expecting JSON Data")), executionContext.current());
+    }
 
-      Optional<Task> taskOptional = taskStore.updateTask(id, Json.fromJson(json, Task.class));
-
-      return taskOptional.map((task) -> {
-        if(task == null) {
+    return taskRepository.update(Integer.parseInt(id), Json.fromJson(json, Task.class)).thenApplyAsync((idOptional) -> {
+        if(!idOptional.isPresent()) {
           return notFound(Util.createResponse("message", "Task Not Found"));
         }
 
         return noContent();
-      }).orElse(internalServerError(Util.createResponse("message", "Could not create data")));
     }, executionContext.current());
   }
 
   public CompletionStage<Result> deleteAll() {
-    return supplyAsync(() -> {
-      boolean deleted = taskStore.deleteAllTasks();
-
-      if(!deleted) {
-        return internalServerError("message", "Could not delete data");
-      }
-
-      return noContent();
-    }, executionContext.current());
+    try {
+      return taskRepository.deleteAll().thenApplyAsync((deletedCount) -> ok(Util.createResponse("deletedCount", deletedCount)), executionContext.current());
+    } catch (Exception exception) {
+      return supplyAsync(() -> internalServerError("message", "Could not delete data"), executionContext.current());
+    }
   }
 }
