@@ -13,4 +13,3 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.200",
   "javax.xml.bind" % "jaxb-api" % "2.3.1",
 )
-libraryDependencies += guice

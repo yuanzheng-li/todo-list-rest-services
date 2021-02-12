@@ -43,6 +43,7 @@ public class TaskRepository {
 
         if(oldTask != null) {
           oldTask.complete = task.complete;
+          oldTask.updatedAt = task.updatedAt;
 
           oldTask.update();
           transaction.commit();

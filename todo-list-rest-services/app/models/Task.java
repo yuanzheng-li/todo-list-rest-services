@@ -1,6 +1,5 @@
 package models;
 
-
 import io.ebean.Model;
 import play.data.validation.Constraints;
 
@@ -17,4 +16,7 @@ public class Task extends Model {
   public String name;
 
   public boolean complete;
+
+  @Constraints.Required
+  public Long updatedAt;
 }

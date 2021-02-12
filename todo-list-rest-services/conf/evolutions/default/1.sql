@@ -4,6 +4,7 @@ create table task (
   id                            integer not null,
   name                          varchar(255),
   complete                      boolean default false not null,
+  updated_at                    bigint not null,
   constraint pk_task primary key (id)
 );
 
