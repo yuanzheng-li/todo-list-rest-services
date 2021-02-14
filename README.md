@@ -11,3 +11,5 @@
 - Go to the root folder of the project in your terminal
 
 - Run `sbt run`
+
+- Go to localhost:9000 in your browser and click 'Apply this script now!' to create the DB on your machine (`~/tasks`)
